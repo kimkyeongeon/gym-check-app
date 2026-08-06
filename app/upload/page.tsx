@@ -156,7 +156,6 @@ function UploadForm({ memberId }: { memberId: string }) {
           <input
             type="file"
             accept="image/*"
-            capture="environment"
             className="hidden"
             onChange={handleFileChange}
           />
