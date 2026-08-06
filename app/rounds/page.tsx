@@ -11,10 +11,13 @@ export default async function RoundsPage({
   searchParams: Promise<{ round?: string }>;
 }) {
   const { round } = await searchParams;
-  const range = round ? getRoundRangeByKey(round) : getCurrentRoundRange();
+  const [range, currentRange] = await Promise.all([
+    round ? getRoundRangeByKey(round) : getCurrentRoundRange(),
+    getCurrentRoundRange(),
+  ]);
   const entries = await getBoardData(range);
 
-  const isCurrentRound = range.roundNumber === getCurrentRoundRange().roundNumber;
+  const isCurrentRound = range.roundNumber === currentRange.roundNumber;
 
   return (
     <div>

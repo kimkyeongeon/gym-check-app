@@ -53,6 +53,77 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
+function RoundAnchorEditor() {
+  const [anchor, setAnchor] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/settings/round-anchor", { cache: "no-store" })
+      .then((res) => res.json())
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch current anchor on mount
+      .then((data) => setAnchor(data.anchor ?? ""));
+  }, []);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!anchor) return;
+    setSaving(true);
+    setError(null);
+    setSaved(false);
+    try {
+      const res = await fetch("/api/admin/settings/round-anchor", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ anchor }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "저장에 실패했습니다.");
+        return;
+      }
+      setSaved(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-2 rounded-xl border border-black/10 p-3 dark:border-white/10"
+    >
+      <h2 className="text-sm font-semibold">회차 통계 시작일</h2>
+      <p className="text-xs text-gray-400">1회차가 시작하는 날짜입니다. 이후 4주(28일) 단위로 회차가 계산됩니다.</p>
+      {anchor === null ? (
+        <p className="text-xs text-gray-400">불러오는 중...</p>
+      ) : (
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={anchor}
+            onChange={(e) => {
+              setAnchor(e.target.value);
+              setSaved(false);
+            }}
+            className="rounded-lg border border-black/10 px-3 py-2 text-sm dark:border-white/10 dark:bg-transparent"
+          />
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            저장
+          </button>
+        </div>
+      )}
+      {error && <p className="text-sm text-red-500">{error}</p>}
+      {saved && <p className="text-sm text-green-600">저장되었습니다.</p>}
+    </form>
+  );
+}
+
 function MemberManager() {
   const { refreshMembers } = useMemberContext();
   const [members, setMembers] = useState<AdminMember[]>([]);
@@ -129,6 +200,8 @@ function MemberManager() {
       >
         구글 드라이브 연결
       </a>
+
+      <RoundAnchorEditor />
 
       <form
         onSubmit={handleAdd}
