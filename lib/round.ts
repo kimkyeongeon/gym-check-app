@@ -2,7 +2,7 @@ import { addDaysUTC, parseDateOnly, todayKST } from "@/lib/date";
 import { getSetting, setSetting } from "@/lib/settings";
 
 const ROUND_LENGTH_DAYS = 28;
-const DEFAULT_ROUND_ANCHOR = "2026-08-10";
+const DEFAULT_ROUND_ANCHOR = "2026-02-23";
 export const ROUND_ANCHOR_SETTING_KEY = "roundAnchorDate";
 
 export type RoundRange = {
