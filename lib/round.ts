@@ -35,13 +35,16 @@ function buildRange(anchor: Date, roundNumber: number): RoundRange {
 
 export async function getCurrentRoundRange(): Promise<RoundRange> {
   const anchor = await getRoundAnchor();
-  return buildRange(anchor, roundNumberFor(todayKST(), anchor));
+  return buildRange(anchor, Math.max(1, roundNumberFor(todayKST(), anchor)));
 }
 
 export async function getRoundRangeByKey(key: string): Promise<RoundRange> {
   const anchor = await getRoundAnchor();
   const roundNumber = Number(key);
-  return buildRange(anchor, Number.isInteger(roundNumber) ? roundNumber : roundNumberFor(todayKST(), anchor));
+  return buildRange(
+    anchor,
+    Number.isInteger(roundNumber) ? roundNumber : Math.max(1, roundNumberFor(todayKST(), anchor)),
+  );
 }
 
 export function formatRoundLabel(range: RoundRange): string {
