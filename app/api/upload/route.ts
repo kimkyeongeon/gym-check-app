@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("Drive upload failed", err);
     return NextResponse.json(
-      { error: "DEBUG:" + String(err) + " | " + JSON.stringify((err as { errors?: unknown })?.errors ?? null) },
+      { error: "구글 드라이브 업로드에 실패했습니다. 잠시 후 다시 시도해주세요." },
       { status: 502 },
     );
   }

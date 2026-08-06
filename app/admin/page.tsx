@@ -112,6 +112,13 @@ function MemberManager() {
 
   return (
     <div className="flex flex-col gap-6">
+      <a
+        href="/api/admin/drive-auth"
+        className="rounded-xl border border-black/10 px-3 py-2 text-center text-sm font-medium dark:border-white/10"
+      >
+        구글 드라이브 연결
+      </a>
+
       <form
         onSubmit={handleAdd}
         className="flex flex-col gap-2 rounded-xl border border-black/10 p-3 dark:border-white/10"

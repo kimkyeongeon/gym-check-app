@@ -4,13 +4,13 @@
 
 - 로그인 없이 이름 선택으로 진입
 - 캘린더에서 날짜를 골라 사진 인증 (지난 날짜 인증 가능, 하루 중복 불가)
-- 원본 사진은 Google Drive(서비스 계정)에 저장, 앱 DB에는 압축 썸네일만 저장
+- 원본 사진은 Google Drive(개인 계정 OAuth 연결)에 저장, 앱 DB에는 압축 썸네일만 저장
 - 업로드 1개월 경과 시 Drive 원본 자동 삭제 (Vercel Cron), 썸네일은 계속 남음
 - 이번 주 현황판 + 주차별 히스토리
 
 ## 기술 스택
 
-Next.js(App Router, TypeScript) · Tailwind CSS · Prisma + Postgres(Vercel Postgres/Neon) · Google Drive API(서비스 계정) · sharp
+Next.js(App Router, TypeScript) · Tailwind CSS · Prisma + Postgres(Vercel Postgres/Neon) · Google Drive API(OAuth) · sharp
 
 ## 로컬 개발 준비
 
@@ -32,9 +32,10 @@ cp .env.example .env
 | --- | --- |
 | `DATABASE_URL` | Postgres 연결 문자열 (pooled) |
 | `DIRECT_URL` | Postgres 직접 연결 문자열 (마이그레이션용) |
-| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | 서비스 계정 이메일 |
-| `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` | 서비스 계정 JSON 키의 `private_key` 값 |
-| `GOOGLE_DRIVE_ROOT_FOLDER_ID` | 서비스 계정과 공유한 Drive 루트 폴더 ID |
+| `GOOGLE_OAUTH_CLIENT_ID` | Google Cloud OAuth 클라이언트 ID |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Google Cloud OAuth 클라이언트 보안 비밀번호 |
+| `GOOGLE_DRIVE_REFRESH_TOKEN` | `/api/admin/drive-auth`로 한 번 로그인 승인 후 발급받는 refresh token |
+| `GOOGLE_DRIVE_ROOT_FOLDER_ID` | 업로드 대상 Drive 루트 폴더 ID (OAuth로 연결한 계정 소유 폴더) |
 | `CRON_SECRET` | 정리 크론 엔드포인트 보호용 임의 문자열 |
 | `ADMIN_PASSCODE` | `/admin` 화면 접근 비밀번호 |
 
@@ -57,17 +58,18 @@ npm run dev
 1. Vercel 프로젝트에서 **Storage → Create Database → Postgres**(Neon)를 선택해 연결합니다.
 2. 발급된 `POSTGRES_PRISMA_URL`을 `DATABASE_URL`에, `POSTGRES_URL_NON_POOLING`을 `DIRECT_URL`에 매핑합니다. (직접 Neon을 쓰는 경우 pooled/direct 두 연결 문자열을 각각 사용)
 
-### Google Drive 서비스 계정
+### Google Drive OAuth 연결
 
-1. [Google Cloud Console](https://console.cloud.google.com/)에서 새 프로젝트를 만듭니다.
-2. **API 및 서비스 → 라이브러리**에서 "Google Drive API"를 검색해 사용 설정합니다.
-3. **API 및 서비스 → 사용자 인증 정보 → 사용자 인증 정보 만들기 → 서비스 계정**으로 서비스 계정을 생성합니다.
-4. 생성된 서비스 계정의 **키 → 키 추가 → JSON**으로 키 파일을 다운로드합니다.
-5. JSON 파일의 `client_email` → `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `private_key` → `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`에 그대로 넣습니다 (줄바꿈은 `\n`으로 이스케이프된 형태 그대로 큰따옴표로 감싸서 저장).
-6. Google Drive에서 폴더(예: `운동인증`)를 만들고, 서비스 계정 이메일 주소를 **편집자**로 공유합니다.
-7. 해당 폴더를 열어 URL의 폴더 ID를 복사해 `GOOGLE_DRIVE_ROOT_FOLDER_ID`에 넣습니다.
+개인 Gmail 계정은 서비스 계정에 Drive 저장공간이 없어서(`Service Accounts do not have storage quota`), 실제 사용자 계정으로 한 번 로그인 승인하는 OAuth 방식을 씁니다.
 
-서비스 계정 방식이므로 개별 사용자 로그인/동의 절차 없이 앱이 바로 업로드할 수 있습니다.
+1. [Google Cloud Console](https://console.cloud.google.com/)에서 새 프로젝트를 만들고 **Google Drive API**를 사용 설정합니다.
+2. **API 및 서비스 → OAuth 동의 화면**에서 "외부"로 앱을 등록하고(테스트 사용자에 본인 이메일 추가), 필요한 정보를 채웁니다.
+3. **API 및 서비스 → 사용자 인증 정보 → 사용자 인증 정보 만들기 → OAuth 클라이언트 ID**(유형: 웹 애플리케이션)를 생성합니다.
+4. **승인된 리디렉션 URI**에 `https://<your-domain>/api/admin/drive-auth/callback`을 등록합니다.
+5. 발급된 클라이언트 ID/보안 비밀번호를 `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`에 저장합니다.
+6. Google Drive에서 업로드용 폴더(예: `운동인증`)를 만들고, URL의 폴더 ID를 `GOOGLE_DRIVE_ROOT_FOLDER_ID`에 저장합니다.
+7. 배포 후 `/admin`에 로그인한 상태로 **"구글 드라이브 연결"** 버튼(또는 `/api/admin/drive-auth`)을 눌러 본인 계정으로 로그인/승인합니다.
+8. 콜백 화면에 표시되는 값을 `GOOGLE_DRIVE_REFRESH_TOKEN`에 저장하고 재배포합니다.
 
 ## 배포 (Vercel)
 

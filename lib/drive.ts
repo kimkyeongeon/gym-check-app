@@ -3,17 +3,25 @@ import { google } from "googleapis";
 
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 
-function getAuth() {
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const key = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, "\n");
-  if (!email || !key) {
-    throw new Error("Google service account credentials are not configured");
+export const DRIVE_OAUTH_SCOPE = "https://www.googleapis.com/auth/drive";
+
+export function getOAuthClient(redirectUri?: string) {
+  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    throw new Error("Google OAuth client credentials are not configured");
   }
-  return new google.auth.JWT({
-    email,
-    key,
-    scopes: ["https://www.googleapis.com/auth/drive"],
-  });
+  return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+}
+
+function getAuth() {
+  const refreshToken = process.env.GOOGLE_DRIVE_REFRESH_TOKEN;
+  if (!refreshToken) {
+    throw new Error("Google Drive is not connected yet (missing refresh token)");
+  }
+  const client = getOAuthClient();
+  client.setCredentials({ refresh_token: refreshToken });
+  return client;
 }
 
 function getDrive() {
