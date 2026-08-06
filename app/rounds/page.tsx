@@ -43,7 +43,7 @@ export default async function RoundsPage({
           </Link>
         )}
       </div>
-      <WeeklyBoard entries={entries} targetMultiplier={4} />
+      <WeeklyBoard entries={entries} targetMultiplier={4} showPhotos={false} />
     </div>
   );
 }

@@ -7,9 +7,11 @@ import { PhotoModal } from "@/components/PhotoModal";
 export function WeeklyBoard({
   entries,
   targetMultiplier = 1,
+  showPhotos = true,
 }: {
   entries: BoardEntry[];
   targetMultiplier?: number;
+  showPhotos?: boolean;
 }) {
   const [openLog, setOpenLog] = useState<BoardLog | null>(null);
 
@@ -38,7 +40,7 @@ export function WeeklyBoard({
                 style={{ width: `${pct}%` }}
               />
             </div>
-            {logs.length > 0 && (
+            {showPhotos && logs.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
                 {logs.map((log) => (
                   <button
@@ -61,7 +63,7 @@ export function WeeklyBoard({
         );
       })}
 
-      {openLog && <PhotoModal log={openLog} onClose={() => setOpenLog(null)} />}
+      {showPhotos && openLog && <PhotoModal log={openLog} onClose={() => setOpenLog(null)} />}
     </div>
   );
 }
