@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ members });
   } catch (err) {
     console.error("GET /api/admin/members failed", err);
-    return NextResponse.json({ error: "DEBUG:" + String(err) }, { status: 500 });
+    return NextResponse.json({ error: "멤버 목록을 불러오지 못했습니다." }, { status: 500 });
   }
 }
 
@@ -36,6 +36,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ member });
   } catch (err) {
     console.error("POST /api/admin/members failed", err);
-    return NextResponse.json({ error: "DEBUG:" + String(err) }, { status: 500 });
+    return NextResponse.json({ error: "멤버 추가에 실패했습니다." }, { status: 500 });
   }
 }
