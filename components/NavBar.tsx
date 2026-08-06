@@ -8,7 +8,7 @@ const links = [
   { href: "/board", label: "현황판" },
   { href: "/upload", label: "인증하기" },
   { href: "/history", label: "히스토리" },
-  { href: "/goal", label: "목표설정" },
+  { href: "/rounds", label: "회차 통계" },
   { href: "/admin", label: "관리자" },
 ];
 

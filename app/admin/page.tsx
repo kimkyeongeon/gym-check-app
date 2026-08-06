@@ -110,6 +110,17 @@ function MemberManager() {
     await refreshMembers();
   }
 
+  async function updateGoal(member: AdminMember, newGoal: number) {
+    if (newGoal === member.weeklyGoal) return;
+    setMembers((prev) => prev.map((m) => (m.id === member.id ? { ...m, weeklyGoal: newGoal } : m)));
+    await fetch(`/api/admin/members/${member.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ weeklyGoal: newGoal }),
+    });
+    await refreshMembers();
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <a
@@ -163,7 +174,22 @@ function MemberManager() {
                 <p className={`font-medium ${!m.isActive ? "text-gray-400 line-through" : ""}`}>
                   {m.name}
                 </p>
-                <p className="text-xs text-gray-400">주 {m.weeklyGoal}회</p>
+                <div className="flex items-center gap-1 text-xs text-gray-400">
+                  <span>주</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={7}
+                    defaultValue={m.weeklyGoal}
+                    onBlur={(e) => {
+                      const v = Number(e.target.value);
+                      if (Number.isInteger(v) && v >= 1 && v <= 7) updateGoal(m, v);
+                      else e.target.value = String(m.weeklyGoal);
+                    }}
+                    className="w-12 rounded border border-black/10 px-1 py-0.5 text-center dark:border-white/10 dark:bg-transparent"
+                  />
+                  <span>회</span>
+                </div>
               </div>
               <button
                 type="button"
