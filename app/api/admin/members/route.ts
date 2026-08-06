@@ -6,8 +6,13 @@ export async function GET(req: NextRequest) {
   if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "인증이 필요합니다." }, { status: 401 });
   }
-  const members = await prisma.member.findMany({ orderBy: { createdAt: "asc" } });
-  return NextResponse.json({ members });
+  try {
+    const members = await prisma.member.findMany({ orderBy: { createdAt: "asc" } });
+    return NextResponse.json({ members });
+  } catch (err) {
+    console.error("GET /api/admin/members failed", err);
+    return NextResponse.json({ error: "DEBUG:" + String(err) }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -26,6 +31,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "목표 횟수는 1~7 사이여야 합니다." }, { status: 400 });
   }
 
-  const member = await prisma.member.create({ data: { name, weeklyGoal } });
-  return NextResponse.json({ member });
+  try {
+    const member = await prisma.member.create({ data: { name, weeklyGoal } });
+    return NextResponse.json({ member });
+  } catch (err) {
+    console.error("POST /api/admin/members failed", err);
+    return NextResponse.json({ error: "DEBUG:" + String(err) }, { status: 500 });
+  }
 }
