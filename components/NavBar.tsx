@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useMemberContext } from "@/components/MemberContext";
 
 const links = [
-  { href: "/board", label: "현황판" },
   { href: "/upload", label: "인증하기" },
   { href: "/history", label: "히스토리" },
   { href: "/rounds", label: "회차 통계" },
@@ -21,7 +20,7 @@ export function NavBar() {
   return (
     <>
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white/90 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-black/80">
-        <Link href="/board" className="font-semibold">
+        <Link href="/history" className="font-semibold">
           오운완
         </Link>
         {currentMember && (

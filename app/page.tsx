@@ -10,7 +10,7 @@ export default function HomePage() {
 
   function handleSelect(id: string) {
     selectMember(id);
-    router.push("/board");
+    router.push("/history");
   }
 
   return (
